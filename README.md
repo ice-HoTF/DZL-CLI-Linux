@@ -75,19 +75,6 @@ https://www.youtube.com/watch?v=bssSaxZ6hS4
 \
 \
 \
-**Add DZL as a Application Entry and Open it as an Application** 
-\
-This is automatically done through the <install_DZL.sh> script, but this is how you do it manually:
-\
-\
-1: Copy <DZL.desktop> to /home/$USER/.local/share/applications/ and in the Terminal:
-\
-cp /home/$USER/DZL-Beta-Linux-main/DZL.desktop /home/$USER/.local/share/applications/DZL.desktop
-\
-\
-2: Copy the .png-icon to the </usr/share/icons> folder in the Terminal:
-\
-sudo cp /home/$USER/DZL-Beta-Linux-main/DZL/dzl.png /usr/share/icons/
 \
 \
 \
