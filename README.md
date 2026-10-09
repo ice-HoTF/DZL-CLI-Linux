@@ -1,6 +1,6 @@
 # A Konsole-based DayZ Mod Launcher For Linux!
 \
- **Released 16/04/2026**
+ **Released 10/10/2026**
 \
 \
 By: ice_hotf
