@@ -1,15 +1,20 @@
 #!/bin/bash
 
-### Uninstall DZL###
+echo "Removing DZL.desktop from '/home/$USER/.local/share/applications'"
+rm -f "/home/$USER/.local/share/applications/DZL.desktop"
 
-sudo rm /home/$USER/.local/share/applications/DZL.desktop 
-echo "Removing DZL.Desktop from '.local/share/applications'"
-sudo rm /usr/share/icons/dzl.png
-echo "Removing dzl.png from 'usr/share/icons'"
-sudo rm -rf /home/$USER/DZL/
-echo "Removing folder 'DZL' from 'home/$USER/DZL'"
-#cd ~
-#exec bash
+echo "Removing dzl.png from '/usr/share/icons'"
+if [[ -f /usr/share/icons/dzl.png ]]; then
+    if command -v steamos-readonly >/dev/null 2>&1; then
+        sudo steamos-readonly disable
+        sudo rm -f /usr/share/icons/dzl.png
+        sudo steamos-readonly enable
+    else
+        sudo rm -f /usr/share/icons/dzl.png
+    fi
+fi
+
+echo "Removing folder 'DZL' from '/home/$USER/DZL'"
+rm -rf "/home/$USER/DZL/"
+
 echo "Uninstallation Successful"
-
-
