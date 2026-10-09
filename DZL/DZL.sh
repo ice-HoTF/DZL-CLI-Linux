@@ -10,7 +10,7 @@
 
 modname() {
     local n
-    n=$(sed -n 's/^name *= *"\(.*\)";.*/\1/p' "/home/$USER/.steam/steam/steamapps/workshop/content/221100/$1/meta.cpp" 2>/dev/null | head -n1 | tr -d '\r') || true
+    n=$(sed -n 's/^name *= *"\(.*\)";.*/\1/p' "$STEAMAPPS/workshop/content/221100/$1/meta.cpp" 2>/dev/null | head -n1 | tr -d '\r') || true
     echo "${n:-$1}"
 }
 
@@ -24,7 +24,7 @@ check_updates() {
         resp=$(curl -sS -m 15 -d "itemcount=${#chunk[@]}" "${args[@]}" "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/") || return 1
         jq -e '.response.publishedfiledetails' >/dev/null 2>&1 <<< "$resp" || return 1
         while IFS=$'\t' read -r id tu; do
-            if [[ -z $(find "/home/$USER/.steam/steam/steamapps/workshop/content/221100/$id" -type f -newermt "@$tu" -print -quit 2>/dev/null) ]]; then
+            if [[ -z $(find "$STEAMAPPS/workshop/content/221100/$id" -type f -newermt "@$tu" -print -quit 2>/dev/null) ]]; then
                 UPD_OUT+=("$id")
             fi
         done < <(jq -r '.response.publishedfiledetails[] | select(.result == 1) | "\(.publishedfileid)\t\(.time_updated)"' <<< "$resp")
@@ -464,11 +464,11 @@ read -s -n1 -p $'\n
 [[ -z $foo ]] || { submenur1 2; return; }
 
 
-      	    rm -rf /home/$USER/.steam/steam/steamapps/workshop/content/221100/*
+      	    rm -rf $STEAMAPPS/workshop/content/221100/*
      	    sleep 0.1
-            rm -rf /home/$USER/.steam/steam/steamapps/workshop/downloads/*
+            rm -rf $STEAMAPPS/workshop/downloads/*
             sleep 0.1
-     	    rm -r -f /home/$USER/.steam/steam/steamapps/common/DayZ/@*
+     	    rm -r -f $STEAMAPPS/common/DayZ/@*
 
 main;;
 
@@ -484,7 +484,7 @@ printf '\e[?1000h\e[?1006h'
 while true; do
     if (( reload )); then
         mfavs=(); mnames=()
-        while IFS=$'\t' read -r n m; do mnames+=("$n"); mfavs+=("$m"); done < <(for m in $(ls /home/$USER/.steam/steam/steamapps/workshop/content/221100/); do printf '%s\t%s\n' "$(modname "$m")" "$m"; done | sort -f -t $'\t' -k1,1)
+        while IFS=$'\t' read -r n m; do mnames+=("$n"); mfavs+=("$m"); done < <(for m in $(ls $STEAMAPPS/workshop/content/221100/); do printf '%s\t%s\n' "$(modname "$m")" "$m"; done | sort -f -t $'\t' -k1,1)
         reload=0
     fi
     if [[ ${#mfavs[@]} -eq 0 ]]; then
@@ -585,7 +585,7 @@ while true; do
         # echo ""
         echo "Left MB = Enter   Right MB = Esc"
                 if waitkey; then
-                    for id in "${UPD_OUT[@]}"; do rm -rf "/home/$USER/.steam/steam/steamapps/workshop/content/221100/${id}"; done
+                    for id in "${UPD_OUT[@]}"; do rm -rf "$STEAMAPPS/workshop/content/221100/${id}"; done
                     reload=1
                 fi
             fi
@@ -610,8 +610,8 @@ while true; do
                     if check_updates "$id"; then
                         if (( ${#UPD_OUT[@]} )); then
                             echo "Update found. Downloading .."
-                            acf="$HOME/.steam/steam/steamapps/workshop/appworkshop_221100.acf"
-                            rm -rf "/home/$USER/.steam/steam/steamapps/workshop/content/221100/$id"
+                            acf="$STEAMAPPS/workshop/appworkshop_221100.acf"
+                            rm -rf "$STEAMAPPS/workshop/content/221100/$id"
                             rm -f "$acf"
                             steam steam+workshop_download_item 221100 "$id" && wait
                             until [[ -f "$acf" ]]; do sleep 2; done
@@ -651,14 +651,14 @@ while true; do
         # echo ""
         echo "Left MB = Enter   Right MB = Esc"
                     if waitkey; then
-                        rm -rf "/home/$USER/.steam/steam/steamapps/workshop/content/221100/$id"
+                        rm -rf "$STEAMAPPS/workshop/content/221100/$id"
                         reload=1
                         break
                     fi
                     ;;
                 3)
                     clear
-                    base="/home/$USER/.steam/steam/steamapps/workshop/content/221100/$id"
+                    base="$STEAMAPPS/workshop/content/221100/$id"
                     lt=$(find "$base" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -n1 | cut -d. -f1) || lt=""
                     au=$(sed -n 's/^author *= *"\(.*\)";.*/\1/p' "$base/mod.cpp" 2>/dev/null | head -n1 | tr -d '\r') || au=""
                     info=$(curl -sS -m 15 -d "itemcount=1" -d "publishedfileids[0]=$id" "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/" 2>/dev/null | jq -r '.response.publishedfiledetails[0] | select(.result == 1) | "\(.time_updated)\t\(.time_created)\t\(.subscriptions)"' 2>/dev/null) || info=""
@@ -716,6 +716,15 @@ set -eo pipefail
 SELF=$(basename "$(readlink -f "${0}")")
 
 DAYZ_ID=221100
+
+if [[ -d "${HOME}/.steam/debian-installation/steamapps" ]]; then
+    STEAMAPPS="${HOME}/.steam/debian-installation/steamapps"
+elif [[ -d "${HOME}/.steam/steam/steamapps" ]]; then
+    STEAMAPPS="${HOME}/.steam/steam/steamapps"
+else
+    echo "Steam folder not found in ${HOME}/.steam" >&2
+    exit 1
+fi
 
 DEFAULT_GAMEPORT=2302
 DEFAULT_QUERYPORT=27016
@@ -818,7 +827,7 @@ echo "[${SELF}][debug] ${@}"
 
 #debug "Checking directory: ${1}"
 #if [ ! -d "${1}" ] ; then
-#mkdir "/home/$USER/.steam/steam/steamapps/workshop/content/221100"
+#mkdir "$STEAMAPPS/workshop/content/221100"
 #fi
 #}
 
@@ -887,12 +896,12 @@ query_server_api() {
 mainmenu(){
 
 sleep 0.25
-if [ -f "/home/$USER/.steam/steam/steamapps/workshop/appworkshop_221100.acf" ] ; then
-rm /home/$USER/.steam/steam/steamapps/workshop/appworkshop_221100.acf
+if [ -f "$STEAMAPPS/workshop/appworkshop_221100.acf" ] ; then
+rm $STEAMAPPS/workshop/appworkshop_221100.acf
 fi
 sleep 0.25
-if [ -f "/home/$USER/.steam/steam/steamapps/workshop/appworkshop_241100.acf" ] ; then
-rm /home/$USER/.steam/steam/steamapps/workshop/appworkshop_241100.acf
+if [ -f "$STEAMAPPS/workshop/appworkshop_241100.acf" ] ; then
+rm $STEAMAPPS/workshop/appworkshop_241100.acf
 fi
 sleep 0.25
 
@@ -909,8 +918,8 @@ case $number in
 	    echo -e "\n
  Checking Server Mods .."
             sleep 0.25
-            rm -rf /home/$USER/.steam/steam/steamapps/workshop/content/downloads/*
-            rm -r -f /home/$USER/.steam/steam/steamapps/common/DayZ/@*
+            rm -rf $STEAMAPPS/workshop/content/downloads/*
+            rm -r -f $STEAMAPPS/common/DayZ/@*
             sleep 0.1;;
     [2])
     submenu2
@@ -945,17 +954,17 @@ read -p $'\n
 \n' foo
             sleep 0.25
             for modid in "${INPUT[@]}"; do
-	    rm -rf /home/$USER/.steam/steam/steamapps/workshop/content/221100/${modid}
-	    rm -r -f /home/$USER/.steam/steam/steamapps/common/DayZ/@*
+	    rm -rf $STEAMAPPS/workshop/content/221100/${modid}
+	    rm -r -f $STEAMAPPS/common/DayZ/@*
 	    continue
 	   done
             sleep 0.1
-            rm -rf /home/$USER/.steam/steam/steamapps/workshop/content/downloads/*
+            rm -rf $STEAMAPPS/workshop/content/downloads/*
             sleep 0.1
-            rm -r -f /home/$USER/.steam/steam/steamapps/common/DayZ/@*
+            rm -r -f $STEAMAPPS/common/DayZ/@*
             sleep 0.1
-            if [ -f "/home/$USER/.steam/steam/steamapps/workshop/appworkshop_221100.acf" ] ; then
-            rm /home/$USER/.steam/steam/steamapps/workshop/appworkshop_221100.acf
+            if [ -f "$STEAMAPPS/workshop/appworkshop_221100.acf" ] ; then
+            rm $STEAMAPPS/workshop/appworkshop_221100.acf
             fi
 sleep 0.1;;
 
@@ -980,14 +989,14 @@ echo -e "\n
  Mods Deleted:\n ${mods2}\n From Workshop Directory: \n ${dir_workshop}"
             sleep 0.1
 	    for modid in "${INPUT[@]}"; do
-	    rm -rf /home/$USER/.steam/steam/steamapps/workshop/content/221100/${modid}
+	    rm -rf $STEAMAPPS/workshop/content/221100/${modid}
 	    continue
 	    done
-            rm -rf /home/$USER/.steam/steam/steamapps/workshop/downloads/*
+            rm -rf $STEAMAPPS/workshop/downloads/*
             sleep 0.1
-	    rm -r -f /home/$USER/.steam/steam/steamapps/common/DayZ/@*
-            if [ -f "/home/$USER/.steam/steam/steamapps/workshop/appworkshop_221100.acf" ] ; then
-            rm /home/$USER/.steam/steam/steamapps/workshop/appworkshop_221100.acf
+	    rm -r -f $STEAMAPPS/common/DayZ/@*
+            if [ -f "$STEAMAPPS/workshop/appworkshop_221100.acf" ] ; then
+            rm $STEAMAPPS/workshop/appworkshop_221100.acf
             fi
 #exit;;
 
@@ -1068,7 +1077,7 @@ mods_setup() {
                 echo " Left MB = Enter    Right MB = Esc"
                 if waitkey; then
                     for id in "${UPD_OUT[@]}"; do rm -rf "${dir_workshop}/${id}"; done
-                    rm -f "$HOME/.steam/steam/steamapps/workshop/appworkshop_221100.acf"
+                    rm -f "$STEAMAPPS/workshop/appworkshop_221100.acf"
                 fi
             fi
         else
@@ -1098,7 +1107,7 @@ fi
 done
 
 if (( missing == 1 )); then
-    local acf="$HOME/.steam/steam/steamapps/workshop/appworkshop_221100.acf"
+    local acf="$STEAMAPPS/workshop/appworkshop_221100.acf"
     echo -e "\n Please Wait While Steam Downloads The Mods."
     sleep 2
     until [[ -f "$acf" ]]; do
@@ -1192,12 +1201,8 @@ main() {
   check_deps
   resolve_steam
 
-  if [[ -z "${STEAM_ROOT}" ]]; then
-  STEAM_ROOT="${XDG_DATA_HOME:-${HOME}/.steam}/steam"
-  fi
-  STEAM_ROOT="${STEAM_ROOT}/steamapps"
-  local dir_dayz="${STEAM_ROOT}/common/DayZ"
-  local dir_workshop="${STEAM_ROOT}/workshop/content/${DAYZ_ID}"
+  local dir_dayz="${STEAMAPPS}/common/DayZ"
+  local dir_workshop="${STEAMAPPS}/workshop/content/${DAYZ_ID}"
   check_dir "${dir_dayz}"
   check_dir "${dir_workshop}"
   startmenu "${dir_dayz}" "${dir_workshop}" || exit 1
