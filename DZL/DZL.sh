@@ -264,10 +264,24 @@ check_dir "$dir"
 
 list=$(ls -tr "$dir" | sed 's/\.sh$//')
 if [[ -z "$list" ]]; then
+    printf '\e[?1000h\e[?1006h'
     echo ""
     echo "No Favorites Added!"
     echo ""
-    sleep 1.5
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo "Up/Down = Move   Enter = Select   Esc = Back"
+        # echo ""
+        echo "Left MB = Enter    Right MB = Esc"
+    read -s -r -t 1.5 -n 1000 _ || true
+    printf '\e[?1000l\e[?1006l'
     main
     return
 fi
