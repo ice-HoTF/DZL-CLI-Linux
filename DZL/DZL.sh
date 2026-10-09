@@ -357,7 +357,7 @@ while true; do
             echo "${favs[sel]}:"
             echo ""
             for n in 1 2 3 4; do
-                case $n in 1) t="1) Launch Server";; 2) t="2) Edit File";; 3) t="3) Rename Favorite";; 4) t="4) Delete Favorite";; esac
+                case $n in 1) t="1) Join Server";; 2) t="2) Edit File";; 3) t="3) Rename Favorite";; 4) t="4) Delete Favorite";; esac
                 if (( n == osel )); then echo -e "\e[100;97m$t\e[0m"; else echo "$t"; fi
             done
         echo ""
@@ -405,9 +405,18 @@ while true; do
         if [[ $o == 1 ]]; then
             echo ""
             printf '\e[?1000l\e[?1006l'
-            echo "Launching: ${favs[sel]}"
-            sh "/home/$USER/DZL/Favorites/${favs[sel]}.sh"
-            break
+            INPUT=()
+            fav="$dir${favs[sel]}.sh"
+            SSERVER=$(sed -n 's/.*-connect=\([^ ]*\).*/\1/p' "$fav")
+            PPORT=$(sed -n 's/.*--port \([^ ]*\).*/\1/p' "$fav")
+            NNAME=$(sed -n 's/.*-name=\([^ ]*\).*/\1/p' "$fav")
+            if [[ -z $SSERVER || -z $PPORT ]]; then
+                echo "Could not read the server details from this favorite."
+                sleep 2
+            else
+                AUTOJOIN=1
+                break
+            fi
         elif [[ $o == 2 ]]; then
             printf '\e[?1000l\e[?1006l'
             "${EDITOR:-nano}" "$dir${favs[sel]}.sh" || true
@@ -443,10 +452,7 @@ done
 
 
 
-exit
-echo ""
-
-startmenu "${dir_dayz}" "${dir_workshop}" || exit 1;;
+;;
 
 
 [3] )
@@ -923,8 +929,13 @@ missing=0
 
 unset number
 # pickmenu "Join Server" "Add To Favorites" "Edit Server Mods (For This Server Only)" "Main Menu"
-PICKESC=4
-pickmenu "Join Server" "Add To Favorites" "Edit Server Mods (For This Server Only)" "Main Menu"
+if [[ -n $AUTOJOIN ]]; then
+    unset AUTOJOIN
+    number=1
+else
+    PICKESC=4
+    pickmenu "Join Server" "Add To Favorites" "Edit Server Mods (For This Server Only)" "Main Menu"
+fi
 case $number in
     [1])
     clear
