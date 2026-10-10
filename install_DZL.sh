@@ -1,47 +1,27 @@
 #!/usr/bin/env bash
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEST="/home/$USER/DZL"
+DEST="$SRC/DZL"
 
 clear
 echo "DZL Installer"
 echo ""
-echo "What Linux distro are you using?"
-echo ""
-echo " 1) Debian"
-echo " 2) Arch"
-echo " 3) SteamOS (Steam Deck)"
-echo ""
-
-choice=""
-until [[ $choice == [123] ]]; do
-    read -r -p "Enter 1, 2 or 3: " choice
-done
-echo ""
 
 steamos=0
-case $choice in
-    1)
-        distro="Debian"
-        steamdir="debian-installation"
-        install_cmd=(sudo apt install -y)
-        ;;
-    2)
-        distro="Arch"
-        steamdir="steam"
-        install_cmd=(sudo pacman -S --needed --noconfirm)
-        ;;
-    3)
-        distro="SteamOS"
-        steamdir="steam"
-        install_cmd=(sudo pacman -Sy --needed --noconfirm)
-        steamos=1
-        ;;
-esac
+if command -v steamos-readonly >/dev/null 2>&1; then
+    steamos=1
+fi
 
-echo "Distro:       $distro"
-echo "Steam folder: /home/$USER/.steam/$steamdir"
-echo ""
+install_cmd=()
+if command -v pacman >/dev/null 2>&1; then
+    if (( steamos )); then
+        install_cmd=(sudo pacman -Sy --needed --noconfirm)
+    else
+        install_cmd=(sudo pacman -S --needed --noconfirm)
+    fi
+elif command -v apt >/dev/null 2>&1; then
+    install_cmd=(sudo apt install -y)
+fi
 
 steamos_lock() {
     echo ""
@@ -56,10 +36,7 @@ if (( steamos )); then
     echo ""
 fi
 
-echo "Copying 'DZL Folder' to /home/$USER/"
-cp -R "$SRC/DZL/" "/home/$USER/" || { echo "Could not copy the DZL folder from $SRC. Stopping."; exit 1; }
-echo ""
-echo ""
+
 
 echo "Installing Dependencies:"
 echo ""
@@ -77,6 +54,7 @@ if (( ${#missing[@]} )); then
         sudo pacman-key --populate holo
         echo ""
     fi
+    (( ${#install_cmd[@]} )) || { echo "No supported package manager. Install manually: ${missing[*]}"; exit 1; }
     "${install_cmd[@]}" "${missing[@]}" || { echo "Dependency install failed. Stopping."; exit 1; }
 else
     echo "gawk, curl and jq are already installed."
@@ -111,4 +89,4 @@ if (( steamos )); then
 fi
 
 echo ""
-echo "All Done! Launch DZL by Using the Application Menu Entry or through Terminal: bash /home/$USER/DZL/DZL.sh"
+echo "All Done! Launch DZL by Using the Application Menu Entry or through Terminal: bash $DEST/DZL.sh"
