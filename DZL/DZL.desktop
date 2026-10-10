@@ -4,6 +4,6 @@ Name=DZL
 ####################   CHANGE 'Your_Username' TO YOUR USERNAME   ####################
 Icon=dzl.png   
 ####################   CHANGE 'Your_Username' TO YOUR USERNAME   ####################
-Exec=konsole -e bash /home/deck/DZL/DZL.sh
-Terminal=true
+Exec=konsole -e /path/to/file.sh
+Terminal=false
 Categories=Application;
