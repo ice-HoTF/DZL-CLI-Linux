@@ -259,7 +259,7 @@ sleep 0.5;;
 
 [2] )
 clear
-dir="/home/$USER/DZL/Favorites/"
+dir="$SCRIPT_DIR/Favorites/"
 check_dir "$dir"
 
 list=$(ls -tr "$dir" | sed 's/\.sh$//')
@@ -1039,7 +1039,7 @@ esac
 submenu2(){
 
     clear
-    ppath=/home/$USER/DZL/Favorites/
+    ppath="$SCRIPT_DIR/Favorites/"
     check_dir "$ppath"
     echo -e "\n
  Save Favorite As:
