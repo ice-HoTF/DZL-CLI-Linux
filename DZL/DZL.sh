@@ -733,7 +733,7 @@ esac
 
 set -eo pipefail
 
-SELF=$(basename "$(readlink -f "${0}")")
+SELF=$(basename "$(readlink -f "${0}")") SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${0}")")" && pwd)"
 
 DAYZ_ID=221100
 
