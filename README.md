@@ -75,7 +75,7 @@ https://www.youtube.com/watch?v=bssSaxZ6hS4
 \
 \
 \
-Main Menu:
+**Main Menu:**
 \
 \
 <img width="528" height="410" alt="1" src="https://github.com/user-attachments/assets/74a3be1e-060f-42c9-a9a4-ffc1be696d37" />
