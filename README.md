@@ -93,6 +93,9 @@ https://www.youtube.com/watch?v=bssSaxZ6hS4
 <img width="616" height="406" alt="83" src="https://github.com/user-attachments/assets/843a1687-2bb7-4e93-bc94-803cd9fca1b3" />
 \
 \
+**Manual Setup:**
+\
+\
 <img width="528" height="410" alt="2" src="https://github.com/user-attachments/assets/aac4b1d6-68e5-416e-a0a6-514674d7b9eb" />
 \
 \
