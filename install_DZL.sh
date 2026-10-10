@@ -91,6 +91,7 @@ echo ""
 
 mkdir -p "/home/$USER/.local/share/applications"
 cp "$DEST/DZL.desktop" "/home/$USER/.local/share/applications/DZL.desktop"
+sed -i "s|/path/to/file.sh|$DEST/DZL.sh|" "/home/$USER/.local/share/applications/DZL.desktop"
 echo "DZL.desktop was copied to '/home/$USER/.local/share/applications/' and should be available in the application menu."
 echo ""
 echo ""
