@@ -93,7 +93,7 @@ Main Menu:
 <img width="528" height="410" alt="3" src="https://github.com/user-attachments/assets/ad865393-40d7-4d76-9622-53530d0da195" />
 \
 \
-**Server Ready:
+**Server Ready:**
 \
 \
 <img width="642" height="410" alt="4" src="https://github.com/user-attachments/assets/f32d8b26-0730-47db-9ef6-79e81f23bf29" />
