@@ -96,6 +96,9 @@ echo "DZL.desktop was copied to '/home/$USER/.local/share/applications/' and sho
 echo ""
 echo ""
 
+if (( steamos )); then
+    sudo steamos-readonly disable
+fi
 sudo cp "$DEST/dzl.png" /usr/share/icons/
 echo "Application Icon copied to '/usr/share/icons'"
 echo ""
