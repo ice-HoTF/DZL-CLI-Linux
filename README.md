@@ -105,7 +105,7 @@ https://www.youtube.com/watch?v=bssSaxZ6hS4
 **Server Ready:**
 \
 \
-<img width="642" height="410" alt="4" src="https://github.com/user-attachments/assets/f32d8b26-0730-47db-9ef6-79e81f23bf29" />
+<img width="616" height="406" alt="42" src="https://github.com/user-attachments/assets/ab410887-c00b-4b8f-88f6-0a3ca5fa8174" />
 \
 \
 **Favorites:**
