@@ -84,6 +84,15 @@ https://www.youtube.com/watch?v=bssSaxZ6hS4
 **Add Server:**
 \
 \
+<img width="500" height="320" alt="81" src="https://github.com/user-attachments/assets/84718a25-a4f5-43bb-aee6-b0b4c653f341" />
+\
+\
+<img width="500" height="320" alt="82" src="https://github.com/user-attachments/assets/01384565-f95f-4263-bcb5-2741ea79c952" />
+\
+\
+<img width="616" height="406" alt="83" src="https://github.com/user-attachments/assets/843a1687-2bb7-4e93-bc94-803cd9fca1b3" />
+\
+\
 <img width="528" height="410" alt="2" src="https://github.com/user-attachments/assets/aac4b1d6-68e5-416e-a0a6-514674d7b9eb" />
 \
 \
