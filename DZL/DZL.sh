@@ -288,6 +288,7 @@ searchserver() {
     IFS=$'\t' read -r ip gp qp pl mx pw nm <<< "${res[sel]}"
     SSERVER="$ip:$gp"
     PPORT="$qp"
+    SRVNAME="$nm"
     clear
     echo ""
     echo " Selected: $nm"
@@ -365,6 +366,7 @@ case ${number} in
 
 [1] )
 INPUT=()
+SRVNAME=""
 while true; do
 PICKESC=4
 PICKTITLE="Server Setup:  (Username: ${GNAME:-not set})"
@@ -569,6 +571,7 @@ while true; do
             PPORT=$(sed -n 's/.*--port \([^ ]*\).*/\1/p' "$fav")
             NNAME=$(sed -n 's/.*-name=\([^ ]*\).*/\1/p' "$fav")
             if [[ -n $GNAME ]]; then NNAME=$GNAME; fi
+            SRVNAME=""
             if [[ -z $SSERVER || -z $PPORT ]]; then
                 echo "Could not read the server details from this favorite."
                 sleep 2
@@ -926,6 +929,7 @@ PORT="${DEFAULT_QUERYPORT}"
 NAME=""
 NNAME=""
 GNAME=""
+SRVNAME=""
 if [[ -s "$SCRIPT_DIR/username.conf" ]]; then GNAME="$(head -n1 "$SCRIPT_DIR/username.conf" | tr -d '\r')"; fi
 INPUT=()
 MODS=()
@@ -1102,7 +1106,7 @@ case $number in
     clear
 	    echo ""
 	    echo -e "\n
- Checking Server Mods .."
+ Confirming Server Mods .."
             sleep 0.25
             rm -rf $STEAMAPPS/workshop/content/downloads/*
             rm -r -f $STEAMAPPS/common/DayZ/@*
@@ -1117,7 +1121,7 @@ case $number in
     main
     ;;
         *)
-        echo "invalid answer, please try again"
+        echo "Invalid Answer, please try again"
         ;;
 
 esac
@@ -1233,9 +1237,9 @@ ENDMASTER
  Launch Script Saved In:$ppath$fname.sh";
    echo "";
    echo " This Server Was Added To Favorites";
-echo -e "\n
- Launch command for this server: \n\n steam -applaunch 221100 \"-mod=$mods\" -connect=$SSERVER --port ${PPORT} -name=${NNAME} -nolauncher -world=empty"
-echo ""
+# echo -e "\n
+#  # Launch command for this server: \n\n steam -applaunch 221100 \"-mod=$mods\" -connect=$SSERVER --port ${PPORT} -name=${NNAME} -nolauncher -world=empty"
+# echo ""
 echo "";
 mainmenu;
 }
@@ -1251,14 +1255,14 @@ mods_setup() {
         if [[ -d "${dir_workshop}/${id}" ]]; then installed+=("${id}"); fi
     done
     if (( ${#installed[@]} )); then
-        echo -e "\n Checking mod updates .."
+        echo -e "\n Checking for Mod Updates .."
         if check_updates "${installed[@]}"; then
             if (( ${#UPD_OUT[@]} )); then
                 clear
-                echo -e "\n Mod updates available:\n"
+                echo -e "\n Mod Updates Available:\n"
                 for id in "${UPD_OUT[@]}"; do echo "  $(modname "$id")"; done
                 echo ""
-                echo " Enter = Update them   Esc = Skip"
+                echo " Enter = Update   Esc = Skip"
                 echo ""
                 echo " Left MB = Enter    Right MB = Esc"
                 if waitkey; then
@@ -1267,7 +1271,7 @@ mods_setup() {
                 fi
             fi
         else
-            echo " Update check failed, skipping."
+            echo " Update Check Failed, skipping."
             sleep 1
         fi
     fi
@@ -1320,15 +1324,22 @@ fi
 
     done
 
+    local sn="$SRVNAME"
+    if [[ -z $sn && -s "$SCRIPT_DIR/servers_cache.json" ]]; then
+        sn=$(jq -r --arg ip "${SSERVER%:*}" --arg gp "${SSERVER##*:}" '[.result[] | select(.endpoint.ip == $ip and (.gamePort | tostring) == $gp)][0].name // empty' "$SCRIPT_DIR/servers_cache.json" 2>/dev/null | tr -d '[:cntrl:]') || sn=""
+    fi
     echo -e "\n
+ Server Name: ${sn:-unknown}
  Name: $NNAME
  Game IP:Port $SSERVER
  Query Port: $PPORT"
     echo ""
-
-   echo -e "\n
- Launch command for this server: \n\n steam -applaunch 221100 \"-mod=$mods\" -connect=$SSERVER --port ${PPORT} -name=${NNAME} -nolauncher -world=empty"
-echo ""
+	echo ""
+	echo ""
+	echo ""
+#    echo -e "\n
+# # Launch command for this server: \n\n steam -applaunch 221100 \"-mod=$mods\" -connect=$SSERVER --port ${PPORT} -name=${NNAME} -nolauncher -world=empty"
+# echo ""
 
 #read -p $'\n
 # Press " Enter " to Launch DayZ And Join The Server
@@ -1368,7 +1379,9 @@ echo ""
 }
 
 trap 'echo -e "\n Exiting...\n"; exit 0' SIGINT SIGTERM
-trap 'printf "\e[?1000l\e[?1006l"' EXIT
+# trap 'printf "\e[?1000l\e[?1006l"' EXIT
+
+trap 'printf "\e[?1000l\e[?1006l"; rm -f "$SCRIPT_DIR/servers_cache.json" "$SCRIPT_DIR/servers_cache.json.tmp"' EXIT
 
 launch_game() {
 read -p $'\n
