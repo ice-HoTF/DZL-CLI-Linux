@@ -3,5 +3,5 @@ Type=Application
 Name=DZL
 Icon=dzl.png   
 Exec=konsole -e /path/to/file.sh
-Terminal=false
-Categories=Application;
+Type=Application
+Categories=Game;
