@@ -161,11 +161,152 @@ readnum() {
     done
 }
 
+setusername() {
+    local n
+    clear
+    echo ""
+    echo " Current Username: ${GNAME:-not set}"
+    echo ""
+    echo " Enter New Username (empty = clear, Esc = Back)"
+    echo ""
+    readesc n || return 0
+    n="${n//[[:space:]]/_}"
+    GNAME="$n"
+    if [[ -n $GNAME ]]; then
+        printf '%s\n' "$GNAME" > "$SCRIPT_DIR/username.conf"
+    else
+        rm -f "$SCRIPT_DIR/username.conf"
+    fi
+    echo ""
+    echo " Saved."
+    sleep 1
+    return 0
+}
+
+searchserver() {
+    local q cache url k seq c mrest sel top rows cols cnt i line pwtag
+    local ip gp qp pl mx pw nm
+    local -a res
+    url="https://dayzsalauncher.com/api/v1/launcher/servers/dayz"
+    cache="$SCRIPT_DIR/servers_cache.json"
+    clear
+    echo ""
+    echo " Search Server Name:"
+    echo ""
+    echo " Esc = Back"
+    echo ""
+    readesc q || return 1
+    [[ -n $q ]] || return 1
+    if [[ ! -s $cache ]] || [[ -n $(find "$cache" -mmin +10 2>/dev/null) ]]; then
+        echo ""
+        echo " Downloading server list .."
+        if curl "${API_PARAMS[@]}" -m 60 -o "$cache.tmp" "$url" && jq -e '.result | type == "array"' "$cache.tmp" >/dev/null 2>&1; then
+            mv -f "$cache.tmp" "$cache"
+        else
+            rm -f "$cache.tmp"
+            if [[ ! -s $cache ]]; then
+                echo " Server list download failed."
+                sleep 2
+                return 1
+            fi
+        fi
+    fi
+    mapfile -t res < <(jq -r --arg q "$q" '
+        ($q | ascii_downcase | split(" ") | map(select(length > 0))) as $w
+        | [.result[] | select(((.name // "") | ascii_downcase) as $n | all($w[]; . as $x | $n | contains($x)))]
+        | sort_by(-(.players // 0))
+        | .[:100][]
+        | [.endpoint.ip, (.gamePort | tostring), (.endpoint.port | tostring), ((.players // 0) | tostring), ((.maxPlayers // 0) | tostring), (if .password then "P" else "-" end), ((.name // "") | gsub("[[:cntrl:]]"; " "))]
+        | join("\t")' "$cache" 2>/dev/null) || true
+    cnt=${#res[@]}
+    if (( cnt == 0 )); then
+        clear
+        echo ""
+        echo " No servers found."
+        sleep 1.5
+        return 1
+    fi
+    sel=0
+    top=0
+    printf '\e[?1000h\e[?1006h'
+    while true; do
+        rows=$(( $(tput lines) - 8 ))
+        cols=$(tput cols)
+        if (( rows < 1 )); then rows=1; fi
+        if (( sel < top )); then top=$sel; fi
+        if (( sel >= top + rows )); then top=$(( sel - rows + 1 )); fi
+        clear
+        echo "Results for: $q  ($cnt shown, max 100, sorted by players)"
+        echo ""
+        for (( i=top; i<top+rows && i<cnt; i++ )); do
+            IFS=$'\t' read -r ip gp qp pl mx pw nm <<< "${res[i]}"
+            pwtag=""
+            if [[ $pw == P ]]; then pwtag=" [PW]"; fi
+            line="$(printf '%3d) [%s/%s]%s %s' "$((i+1))" "$pl" "$mx" "$pwtag" "$nm")"
+            line="${line:0:cols-1}"
+            if (( i == sel )); then printf '\e[100;97m%s\e[0m\n' "$line"; else printf '%s\n' "$line"; fi
+        done
+        echo ""
+        echo ""
+        echo "Up/Down = Move   Enter = Select   Esc = Back"
+        echo "Left MB = Enter   Right MB = Esc"
+        read -s -n1 k || true
+        if [[ $k == $'\e' ]]; then
+            seq=""
+            read -s -t 0.05 -n2 seq || true
+            if [[ $seq == "[A" ]]; then
+                if (( sel > 0 )); then sel=$((sel-1)); fi
+            elif [[ $seq == "[B" ]]; then
+                if (( sel < cnt - 1 )); then sel=$((sel+1)); fi
+            elif [[ $seq == "[<" ]]; then
+                mrest=""; c=""
+                until [[ $c == M || $c == m ]]; do
+                    c=""
+                    read -s -t 0.05 -n1 c || break
+                    mrest+=$c
+                done
+                if [[ ${mrest%%;*} == 64 ]]; then
+                    if (( sel > 0 )); then sel=$((sel-1)); fi
+                elif [[ ${mrest%%;*} == 65 ]]; then
+                    if (( sel < cnt - 1 )); then sel=$((sel+1)); fi
+                elif [[ ${mrest%%;*} == 0 && ${mrest: -1} == m ]]; then
+                    k=""
+                elif [[ ${mrest%%;*} == 2 && ${mrest: -1} == m ]]; then
+                    printf '\e[?1000l\e[?1006l'
+                    return 1
+                fi
+            elif [[ -z $seq ]]; then
+                printf '\e[?1000l\e[?1006l'
+                return 1
+            fi
+        fi
+        if [[ -z $k ]]; then
+            break
+        fi
+    done
+    printf '\e[?1000l\e[?1006l'
+    IFS=$'\t' read -r ip gp qp pl mx pw nm <<< "${res[sel]}"
+    SSERVER="$ip:$gp"
+    PPORT="$qp"
+    clear
+    echo ""
+    echo " Selected: $nm"
+    echo ""
+    echo " Server IP   : $SSERVER"
+    echo " Query Port  : $PPORT"
+    if [[ -n $GNAME ]]; then
+        NNAME=$GNAME
+        sleep 1
+    else
+        echo -e "\n
+ Enter Username\n"
+        readesc NNAME || return 1
+    fi
+    return 0
+}
+
 startmenu() {
 
-# startmenu() {
-
-# unset number
 number=$FAVBACK; unset FAVBACK
 msel=0
 printf '\e[?1000h\e[?1006h'
@@ -178,7 +319,7 @@ until [[ $number == +([1-4]) ]] ; do
     echo " Select:"
     echo ""
     for n in 1 2 3 4; do
-        case $n in 1) t=" 1) Setup Server & Mods";; 2) t=" 2) Favorites";; 3) t=" 3) Mods";; 4) t=" 4) Quit";; esac
+        case $n in 1) t=" 1) Server Setup";; 2) t=" 2) Favorites";; 3) t=" 3) Mods";; 4) t=" 4) Quit";; esac
         if (( n == msel )); then echo -e "\e[100;97m$t\e[0m"; else echo "$t"; fi
     done
         echo ""
@@ -224,6 +365,18 @@ case ${number} in
 
 [1] )
 INPUT=()
+while true; do
+PICKESC=4
+PICKTITLE="Server Setup:  (Username: ${GNAME:-not set})"
+pickmenu "Search For Server" "Manual Setup" "Select Username"
+if [[ $number == 4 ]]; then main; return; fi
+if [[ $number == 3 ]]; then setusername; continue; fi
+break
+done
+if [[ $number == 1 ]]; then
+searchserver || { main; return; }
+sleep 0.5
+else
 clear
 echo ""
 echo -e "\n
@@ -241,10 +394,15 @@ echo -e "\n
 readesc PPORT || { main; return; }
 sleep 0.5
 
+if [[ -n $GNAME ]]; then
+NNAME=$GNAME
+else
 echo -e "\n
  Enter Username\n"
 readesc NNAME || { main; return; }
-sleep 0.5;;
+fi
+sleep 0.5
+fi;;
 
 
 ######################################################
@@ -410,6 +568,7 @@ while true; do
             SSERVER=$(sed -n 's/.*-connect=\([^ ]*\).*/\1/p' "$fav")
             PPORT=$(sed -n 's/.*--port \([^ ]*\).*/\1/p' "$fav")
             NNAME=$(sed -n 's/.*-name=\([^ ]*\).*/\1/p' "$fav")
+            if [[ -n $GNAME ]]; then NNAME=$GNAME; fi
             if [[ -z $SSERVER || -z $PPORT ]]; then
                 echo "Could not read the server details from this favorite."
                 sleep 2
@@ -766,6 +925,8 @@ SERVER=""
 PORT="${DEFAULT_QUERYPORT}"
 NAME=""
 NNAME=""
+GNAME=""
+if [[ -s "$SCRIPT_DIR/username.conf" ]]; then GNAME="$(head -n1 "$SCRIPT_DIR/username.conf" | tr -d '\r')"; fi
 INPUT=()
 MODS=()
 MODS2=()
