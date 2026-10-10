@@ -9,13 +9,13 @@ By: ice_hotf
 Supported Distros:
 \
 Tested with Arch Linux, Debian and SteamOS (SteamDeck). 
-\
+\ 
 \
 Other Distros:
 \
-The steam path "/home/$USER/.steam/steam/steamapps/" might need to be changed for other distros. 
+As long as you have the dependencies installed and the steam path set correctly it should work fine.) 
 \
-Replace it with yours.
+Replace it with your paths.
 \
 \
 \
@@ -38,9 +38,9 @@ jq
 **About This Script:**
 \
 \
-   This script will identify missing mods, download them (not subscribe to them) and launch DayZ with the mods. 
-   This script will also allow you to delete mods and save Favorite Servers.
-   Just follow the instructions in the terminal window and that's it.
+   This script will Identify missing Mods, Download them (not subscribe to them) and Launch DayZ with the Mods. 
+   This script can Delete, Update and Manage Mods. It can also Add, Delete and Manage Favorite Servers.
+   Just follow the Instructions in the Terminal Window and that's it.
 \
 \
    This script supports modded servers and vanilla servers.
@@ -63,7 +63,7 @@ jq
 \
 or Start DZL with a Terminal Command: 
 \
-bash /home/$USER/DZL/DZL.sh
+bash /path/to/file/DZL.sh
 \
 \
 \
