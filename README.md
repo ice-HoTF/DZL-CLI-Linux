@@ -136,5 +136,7 @@ https://www.youtube.com/watch?v=bssSaxZ6hS4
 \
 \
 I can't join the server:
-- Restart Steam if you can't join the server and try again.
-- On heavily modded servers, steam once in a while glitches right after downloading the mods and. A steam restart solves it.
+- Restart Steam and try again.
+
+Joining Server Fails with a Mod error:
+- Verify Mods and try again.
